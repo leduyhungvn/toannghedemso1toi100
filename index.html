@@ -172,7 +172,7 @@
             flex-grow: 1;
         }
 
-        /* --- LƯỚI ĐÁP ÁN (6 NÚT) --- */
+        /* --- LƯỚI ĐÁP ÁN --- */
         .options-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -204,11 +204,19 @@
         .stat-item { text-align: center; }
         .stat-label { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 5px; }
         .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--text-color); }
+        
+        /* Thông tin Level hiển thị trong báo cáo */
+        #report-level-row {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* --- MOBILE OPTIMIZATION (ĐỊNH DẠNG DỌC CHO ĐIỆN THOẠI) --- */
+        /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 600px) {
             body { padding: 0; }
             
@@ -216,26 +224,26 @@
                 width: 100%; 
                 max-width: 100%; 
                 height: 100vh; 
-                height: 100dvh; /* Dynamic viewport height cho mobile hiện đại */
+                height: 100dvh; 
                 border-radius: 0; 
                 border: none; 
                 box-shadow: none; 
                 padding: 15px;
-                justify-content: flex-start; /* Căn trên để có thể cuộn nếu cần */
-                overflow-y: auto; /* Cho phép cuộn nếu màn hình quá ngắn */
+                justify-content: flex-start; 
+                overflow-y: auto; 
             }
 
             h1 { font-size: 1.2rem; margin-bottom: 10px; }
             .main-title { font-size: 0.9rem; }
 
-            /* Lưới Ngôn ngữ: 2 cột để dễ bấm hơn */
+            /* Lưới Ngôn ngữ: 2 cột */
             .lang-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             
-            /* Lưới Level: 2 cột (5 hàng 2 cột) thay vì 1 hàng 5 cột */
+            /* Lưới Level: 2 cột */
             .level-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .level-btn { padding: 12px 0; font-size: 1.1rem; }
 
-            /* Vùng câu hỏi: Chuyển sang bố cục dọc */
+            /* Vùng câu hỏi: Dọc */
             .question-row { 
                 flex-direction: column; 
                 gap: 10px; 
@@ -245,21 +253,20 @@
             }
             .written-text { 
                 text-align: center; 
-                font-size: 1.4rem; /* Chữ hơi to lên */
+                font-size: 1.4rem; 
                 width: 100%;
             }
             .btn-replay { width: 50px; height: 50px; margin-bottom: 0; }
 
-            /* Lưới Đáp án: 3 HÀNG - 2 CỘT (YÊU CẦU CỦA BẠN) */
+            /* Lưới Đáp án: 2 CỘT - 3 HÀNG */
             .options-grid { 
                 grid-template-columns: repeat(2, 1fr); 
                 gap: 10px; 
                 margin-top: 10px;
-                flex-grow: 1; /* Chiếm phần không gian còn lại */
+                flex-grow: 1; 
                 align-content: start;
             }
             
-            /* Nút đáp án to hơn để dễ bấm bằng ngón cái */
             .option-btn { 
                 padding: 15px 0; 
                 font-size: 1.6rem; 
@@ -270,7 +277,6 @@
             .stats-grid { flex-direction: row; gap: 5px; }
             .stat-item { flex: 1; }
             
-            /* HUD */
             #hud { font-size: 0.85rem; padding: 8px 15px; }
             .heart { font-size: 1rem; }
         }
@@ -330,6 +336,11 @@
         <p data-translate="finalScore">Punkte:</p>
         <div id="result-score" style="font-size: 2.8rem; font-weight: bold; color: var(--primary-color); margin: 10px 0;">0</div>
 
+        <!-- BỔ SUNG: HIỂN THỊ LEVEL ĐÃ CHƠI -->
+        <div id="report-level-row">
+            <span data-translate="levelLabel">Level</span>: <span id="end-level-val">1-10</span>
+        </div>
+
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-label" data-translate="correctCount">Richtig:</div>
@@ -359,7 +370,8 @@ const LANGUAGES = [
             correct: 'Richtig!', wrong: 'Falsch!', langNote: 'Zum Anhören klicken',
             timeEnd: 'Die Zeit ist um.', loseEnd: 'Du hast alle Leben verloren.',
             praise1: 'Ausgezeichnet!', praise2: 'Gut gemacht!', praise3: 'Versuch es nochmal!',
-            correctCount: 'Richtig:', streakCount: 'Beste Reihe:'
+            correctCount: 'Richtig:', streakCount: 'Beste Reihe:',
+            levelLabel: 'Level' // Bổ sung
         }
     },
     { 
@@ -372,7 +384,8 @@ const LANGUAGES = [
             correct: 'Correct!', wrong: 'Wrong!', langNote: 'Click to hear and select',
             timeEnd: 'Time is up.', loseEnd: 'You lost all 3 lives.',
             praise1: 'Excellent!', praise2: 'Good job!', praise3: 'Try again!',
-            correctCount: 'Correct:', streakCount: 'Best Streak:'
+            correctCount: 'Correct:', streakCount: 'Best Streak:',
+            levelLabel: 'Level'
         }
     },
     { 
@@ -385,7 +398,8 @@ const LANGUAGES = [
             correct: '正确!', wrong: '错误!', langNote: '点击以听试',
             timeEnd: '时间到了。', loseEnd: '失去了3次机会。',
             praise1: '太棒了!', praise2: '很好!', praise3: '继续努力!',
-            correctCount: '正确:', streakCount: '最佳连胜:'
+            correctCount: '正确:', streakCount: '最佳连胜:',
+            levelLabel: '难易度'
         }
     },
     { 
@@ -398,7 +412,8 @@ const LANGUAGES = [
             correct: '正解!', wrong: '不正解!', langNote: 'クリックして聞く',
             timeEnd: '時間が終了しました。', loseEnd: 'ライフがなくなりました。',
             praise1: '素晴らしい!', praise2: 'いいね!', praise3: '頑張ろう!',
-            correctCount: '正解:', streakCount: '最高連勝:'
+            correctCount: '正解:', streakCount: '最高連勝:',
+            levelLabel: 'レベル'
         }
     },
     { 
@@ -411,7 +426,8 @@ const LANGUAGES = [
             correct: '정답!', wrong: '오답!', langNote: '클릭하여 선택',
             timeEnd: '시간이 다되었습니다.', loseEnd: '3번의 기회를 모두 잃었습니다.',
             praise1: '훌륭해!', praise2: '잘했어!', praise3: '힘내!',
-            correctCount: '정답:', streakCount: '최대 연속:'
+            correctCount: '정답:', streakCount: '최대 연속:',
+            levelLabel: '난이도'
         }
     },
     { 
@@ -424,7 +440,8 @@ const LANGUAGES = [
             correct: 'Верно!', wrong: 'Неверно!', langNote: 'Нажмите для прослушивания',
             timeEnd: 'Время вышло.', loseEnd: 'Вы потеряли все жизни.',
             praise1: 'Отлично!', praise2: 'Хорошо!', praise3: 'Попробуй снова!',
-            correctCount: 'Верно:', streakCount: 'Лучшая серия:'
+            correctCount: 'Верно:', streakCount: 'Лучшая серия:',
+            levelLabel: 'Уровень'
         }
     },
     { 
@@ -437,7 +454,8 @@ const LANGUAGES = [
             correct: 'Correct!', wrong: 'Faux!', langNote: 'Cliquez pour écouter',
             timeEnd: 'Le temps est écoulé.', loseEnd: 'Vous avez perdu toutes vos vies.',
             praise1: 'Excellent!', praise2: 'Bien joué!', praise3: 'Réessayez!',
-            correctCount: 'Correct:', streakCount: 'Meilleure suite:'
+            correctCount: 'Correct:', streakCount: 'Meilleure suite:',
+            levelLabel: 'Niveau'
         }
     },
     { 
@@ -450,7 +468,8 @@ const LANGUAGES = [
             correct: '¡Correcto!', wrong: '¡Incorrecto!', langNote: 'Haz clic para escuchar',
             timeEnd: 'Se acabó el tiempo.', loseEnd: 'Has perdido todas las vidas.',
             praise1: '¡Excelente!', praise2: '¡Buen trabajo!', praise3: '¡Inténtalo de nuevo!',
-            correctCount: 'Correctas:', streakCount: 'Mejor racha:'
+            correctCount: 'Correctas:', streakCount: 'Mejor racha:',
+            levelLabel: 'Nivel'
         }
     },
     { 
@@ -463,7 +482,8 @@ const LANGUAGES = [
             correct: 'Corretto!', wrong: 'Sbagliato!', langNote: 'Clicca per ascoltare',
             timeEnd: 'Il tempo è scaduto.', loseEnd: 'Hai perso tutte le vite.',
             praise1: 'Eccellente!', praise2: 'Ottimo lavoro!', praise3: 'Riprova!',
-            correctCount: 'Corrette:', streakCount: 'Migliore serie:'
+            correctCount: 'Corrette:', streakCount: 'Migliore serie:',
+            levelLabel: 'Livello'
         }
     }
 ];
@@ -856,10 +876,16 @@ const game = {
         const scoreDisplay = document.getElementById('result-score');
         const statCorrect = document.getElementById('stat-correct');
         const statStreak = document.getElementById('stat-streak');
+        const levelVal = document.getElementById('end-level-val');
 
         scoreDisplay.innerText = this.score;
         statCorrect.innerText = this.correctCount;
         statStreak.innerText = this.maxStreak;
+        
+        // CẬP NHẬT THÔNG TIN LEVEL TRONG BÁO CÁO
+        if (levelVal) {
+            levelVal.innerText = `1-${this.level * 10}`;
+        }
 
         if (isTimeOut) {
             title.innerText = t.timeUp;
