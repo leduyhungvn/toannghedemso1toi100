@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zahlen Lernen - 9 Sprachen</title>
+    <style>
+        /* --- CÀI ĐẶT CHUNG --- */
+        :root {
+            --primary-color: #8E44AD;
+            --secondary-color: #2980B9;
+            --accent-color: #F1C40F;
+            --text-color: #2C3E50;
+            --bg-color: #ECF0F1;
+            --card-bg: #FFFFFF;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(#BDC3C7 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 10px;
+        }
+
+        /* --- KHUNG CHÍNH --- */
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border:4px solid var(--secondary-color);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            text-shadow:1px 1px 0px var(--accent-color);
+        }
+
+        /* --- TIÊU ĐỀ CHÍNH (Main Title) --- */
+        .main-title {
+            color: var(--secondary-color);
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- CÁC MÀN HÌNH --- */
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- NÚT BẤM CHUNG --- */
+        .btn-main {
+            background: var(--primary-color); color: white; border: none;
+            padding: 10px 30px; font-size: 1.1rem; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 4px 0 #6C3483; transition: transform 0.1s; margin: 8px 5px;
+        }
+        .btn-main:active { transform: translateY(4px); box-shadow: none; }
+        .btn-small { background: #7f8c8d; font-size: 1rem; padding: 8px 20px; box-shadow: 0 4px 0 #626567; }
+
+        /* --- LƯỚI CHỌN NGÔN NGỮ (3x3) --- */
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .lang-btn {
+            background: white; border: 2px solid #ddd; border-radius: 10px;
+            padding: 10px 5px; font-size: 0.95rem; cursor: pointer;
+            transition: all 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 90px; justify-content: center;
+        }
+        .lang-btn .flag { font-size: 2.2rem; line-height: 1; }
+        .lang-btn:hover { transform: translateY(-2px); border-color: var(--secondary-color); }
+        .lang-btn.active {
+            background: #F4ECF7; border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.3);
+        }
+
+        /* --- LƯỚI CHỌN LEVEL (GỌN) --- */
+        .level-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 5px; 
+            margin: 15px 0; 
+        }
+        .level-btn {
+            background: var(--secondary-color); border: none; border-radius: 6px;
+            padding: 8px 0; font-weight: bold; color: white; cursor: pointer;
+            box-shadow: 0 3px 0 #2471A3; transition: 0.2s; font-size: 1rem;
+        }
+        .level-btn:hover { background: #5DADE2; }
+        .level-btn.selected { background: var(--primary-color); box-shadow: 0 3px 0 #6C3483; }
+
+        /* --- VÙNG HUD (ĐIỂM & MẠNG) --- */
+        #hud { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #f0f0f0; 
+            padding: 10px 20px; 
+            border-radius: 50px; 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+            font-size: 0.95rem;
+        }
+        
+        .hud-left {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .heart { color: red; font-size: 1.1rem; }
+        
+        #time-bar-container { width: 100%; height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
+        #time-bar { height: 100%; background: var(--primary-color); width: 100%; transition: width 1s linear; }
+
+        /* --- CẤU TRÚC CÂU HỎI (CĂN TRÁI) --- */
+        .question-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            gap: 15px;
+            background: #F4ECF7;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px dashed #D2B4DE;
+            margin-bottom: 15px;
+            min-height: 60px;
+        }
+
+        .btn-replay {
+            background: var(--accent-color); border: none; border-radius: 50%; width: 45px; height: 45px;
+            font-size: 1.4rem; cursor: pointer; box-shadow: 0 3px 0 #D4AC0D; flex-shrink: 0;
+        }
+        .btn-replay:active { transform: scale(0.95); box-shadow: none; }
+
+        .written-text {
+            font-size:1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: left; 
+            line-height: 1.2;
+        }
+
+        /* --- LƯỚI ĐÁP ÁN (6 NÚT) --- */
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 8px; 
+            margin-top: 10px; 
+        }
+
+        .option-btn {
+            background: white; border: 2px solid var(--secondary-color); border-radius: 8px;
+            padding: 12px 0; font-size: 1.4rem; font-weight: bold; color: var(--secondary-color);
+            cursor: pointer; box-shadow: 0 3px 5px rgba(0,0,0,0.05); transition: 0.1s;
+        }
+        .option-btn:active { transform: scale(0.98); background: #EBF5FB; }
+        .option-btn.correct { background: #2ecc71; border-color: #27ae60; color: white; animation: pop 0.3s; }
+        .option-btn.wrong { background: #e74c3c; border-color: #c0392b; color: white; animation: shake 0.4s; }
+
+        /* --- THỐNG KÊ KẾT QUẢ --- */
+        .stats-grid {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .lang-grid { grid-template-columns: repeat(2, 1fr); } 
+            .options-grid { grid-template-columns: repeat(2, 1fr); } 
+            .written-text { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- MÀN HÌNH 1: CHỌN NGÔN NGỮ (GIAO DIỆN CHÍNH - ĐẦU TIÊN) -->
+    <section id="lang-screen" class="screen active">
+        <h1 data-translate="chooseLang">Wähle Sprache</h1>
+        <!-- TIÊU ĐỀ CHỨNG TẠI GIAO DIỆN ĐẦU TIÊN -->
+        <h2 class="main-title">NGHE TIẾNG CHỌN SỐ TỪ 1 ĐẾN 100</h2>
+        
+        <div class="lang-grid" id="lang-selector"></div>
+        <p style="font-size: 0.85rem; color: #7f8c8d;" data-translate="langNote">Zum Anhören klicken</p>
+    </section>
+
+    <!-- MÀN HÌNH 2: CHỌN LEVEL -->
+    <section id="start-screen" class="screen">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <span id="current-lang-flag" style="font-size: 2.2rem;"></span>
+            <h1 data-translate="title">Zahlen Lernen</h1>
+        </div>
+        <p data-translate="selectLevel">Wähle Level:</p>
+        <div class="level-grid" id="level-selector"></div>
+        <div id="level-info" style="margin-bottom: 15px; font-style: italic; color: #666; font-size: 0.9rem;">Bereich: 1-10</div>
+        <div>
+            <button class="btn-main btn-small" onclick="game.showLangScreen()" data-translate="back">← Zurück</button>
+            <button class="btn-main" onclick="game.start()" data-translate="start">Start</button>
+        </div>
+    </section>
+
+    <!-- MÀN HÌNH 3: CHƠI GAME -->
+    <section id="game-screen" class="screen">
+        <div id="hud">
+            <div class="hud-left">
+                <span data-translate="score">Punkte</span>: <span id="score-display">0</span>
+            </div>
+            <div id="lives-display">
+                <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+            </div>
+        </div>
+
+        <div id="time-bar-container"><div id="time-bar"></div></div>
+        
+        <div class="question-row">
+            <button class="btn-replay" onclick="game.replayAudio()" title="Replay">🔊</button>
+            <div id="written-text" class="written-text">Loading...</div>
+        </div>
+        
+        <div class="options-grid" id="options-area"></div>
+    </section>
+
+    <!-- MÀN HÌNH 4: KẾT THÚC + BÁO CÁO -->
+    <section id="end-screen" class="screen">
+        <h1 id="result-title" data-translate="timeUp">Zeit abgelaufen!</h1>
+        <p data-translate="finalScore">Punkte:</p>
+        <div id="result-score" style="font-size: 2.8rem; font-weight: bold; color: var(--primary-color); margin: 10px 0;">0</div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label" data-translate="correctCount">Richtig:</div>
+                <div id="stat-correct" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label" data-translate="streakCount">Reihe:</div>
+                <div id="stat-streak" class="stat-value" style="color: var(--secondary-color);">0</div>
+            </div>
+        </div>
+
+        <p id="result-message" style="margin-bottom: 20px;"></p>
+        <button class="btn-main" onclick="game.showMenu()" data-translate="playAgain">Nochmal</button>
+    </section>
+</div>
+
+<script>
+// --- DỮ LIỆU NGÔN NGỮ ---
+const LANGUAGES = [
+    { 
+        code: 'de-DE', name: 'Deutsch', flag: '🇩🇪',
+        texts: { 
+            chooseLang: 'Sprache wählen', title: 'Zahlen Lernen', selectLevel: 'Level wählen:', 
+            score: 'Punkte', listen: 'Hören', replay: 'Wiederholen', start: 'Start', 
+            back: 'Zurück', playAgain: 'Nochmal', timeUp: 'Zeit abgelaufen!', 
+            gameOver: 'Spiel vorbei!', finalScore: 'Punkte:', 
+            correct: 'Richtig!', wrong: 'Falsch!', langNote: 'Zum Anhören klicken',
+            timeEnd: 'Die Zeit ist um.', loseEnd: 'Du hast alle Leben verloren.',
+            praise1: 'Ausgezeichnet!', praise2: 'Gut gemacht!', praise3: 'Versuch es nochmal!',
+            correctCount: 'Richtig:', streakCount: 'Reihe:'
+        }
+    },
+    { 
+        code: 'en-US', name: 'English', flag: '🇺🇸',
+        texts: { 
+            chooseLang: 'Select Language', title: 'Learn Numbers', selectLevel: 'Select Level:', 
+            score: 'Score', listen: 'Listen', replay: 'Replay', start: 'Play Now', 
+            back: 'Back', playAgain: 'Play Again', timeUp: 'Time\'s Up!', 
+            gameOver: 'Game Over!', finalScore: 'Your Score:', 
+            correct: 'Correct!', wrong: 'Wrong!', langNote: 'Click to hear and select',
+            timeEnd: 'Time is up.', loseEnd: 'You lost all 3 lives.',
+            praise1: 'Excellent!', praise2: 'Good job!', praise3: 'Try again!',
+            correctCount: 'Correct:', streakCount: 'Streak:'
+        }
+    },
+    { 
+        code: 'zh-CN', name: '中文', flag: '🇨🇳',
+        texts: { 
+            chooseLang: '选择语言', title: '学数字', selectLevel: '选择难度:', 
+            score: '得分', listen: '听', replay: '重听', start: '开始游戏', 
+            back: '返回', playAgain: '再玩一次', timeUp: '时间到!', 
+            gameOver: '游戏结束!', finalScore: '你的分数:', 
+            correct: '正确!', wrong: '错误!', langNote: '点击以听试',
+            timeEnd: '时间到了。', loseEnd: '失去了3次机会。',
+            praise1: '太棒了!', praise2: '很好!', praise3: '继续努力!',
+            correctCount: '正确:', streakCount: '连胜:'
+        }
+    },
+    { 
+        code: 'ja-JP', name: '日本語', flag: '🇯🇵',
+        texts: { 
+            chooseLang: '言語を選択', title: '数字の勉強', selectLevel: 'レベルを選択:', 
+            score: 'スコア', listen: '聞く', replay: 'もう一度', start: 'スタート', 
+            back: '戻る', playAgain: 'もう一度', timeUp: '時間切れ!', 
+            gameOver: 'ゲームオーバー!', finalScore: 'スコア:', 
+            correct: '正解!', wrong: '不正解!', langNote: 'クリックして聞く',
+            timeEnd: '時間が終了しました。', loseEnd: 'ライフがなくなりました。',
+            praise1: '素晴らしい!', praise2: 'いいね!', praise3: '頑張ろう!',
+            correctCount: '正解:', streakCount: '連勝:'
+        }
+    },
+    { 
+        code: 'ko-KR', name: '한국어', flag: '🇰🇷',
+        texts: { 
+            chooseLang: '언어 선택', title: '숫자 배우기', selectLevel: '난이도 선택:', 
+            score: '점수', listen: '듣기', replay: '다시 듣기', start: '시작하기', 
+            back: '뒤로', playAgain: '다시 하기', timeUp: '시간 종료!', 
+            gameOver: '게임 오버!', finalScore: '점수:', 
+            correct: '정답!', wrong: '오답!', langNote: '클릭하여 선택',
+            timeEnd: '시간이 다되었습니다.', loseEnd: '3번의 기회를 모두 잃었습니다.',
+            praise1: '훌륭해!', praise2: '잘했어!', praise3: '힘내!',
+            correctCount: '정답:', streakCount: '연속:'
+        }
+    },
+    { 
+        code: 'ru-RU', name: 'Русский', flag: '🇷🇺',
+        texts: { 
+            chooseLang: 'Выберите язык', title: 'Учим цифры', selectLevel: 'Выберите уровень:', 
+            score: 'Очки', listen: 'Слушать', replay: 'Повторить', start: 'Начать', 
+            back: 'Назад', playAgain: 'Играть снова', timeUp: 'Время вышло!', 
+            gameOver: 'Игра окончена!', finalScore: 'Ваш счет:', 
+            correct: 'Верно!', wrong: 'Неверно!', langNote: 'Нажмите для прослушивания',
+            timeEnd: 'Время вышло.', loseEnd: 'Вы потеряли все жизни.',
+            praise1: 'Отлично!', praise2: 'Хорошо!', praise3: 'Попробуй снова!',
+            correctCount: 'Верно:', streakCount: 'Серия:'
+        }
+    },
+    { 
+        code: 'fr-FR', name: 'Français', flag: '🇫🇷',
+        texts: { 
+            chooseLang: 'Choisir langue', title: 'Apprendre les nombres', selectLevel: 'Choisir niveau:', 
+            score: 'Score', listen: 'Écouter', replay: 'Répéter', start: 'Jouer', 
+            back: 'Retour', playAgain: 'Rejouer', timeUp: 'Temps écoulé!', 
+            gameOver: 'Jeu terminé!', finalScore: 'Votre score:', 
+            correct: 'Correct!', wrong: 'Faux!', langNote: 'Cliquez pour écouter',
+            timeEnd: 'Le temps est écoulé.', loseEnd: 'Vous avez perdu toutes vos vies.',
+            praise1: 'Excellent!', praise2: 'Bien joué!', praise3: 'Réessayez!',
+            correctCount: 'Correct:', streakCount: 'Suite:'
+        }
+    },
+    { 
+        code: 'es-ES', name: 'Español', flag: '🇪🇸',
+        texts: { 
+            chooseLang: 'Elegir idioma', title: 'Aprender números', selectLevel: 'Elige nivel:', 
+            score: 'Puntos', listen: 'Escuchar', replay: 'Repetir', start: 'Jugar', 
+            back: 'Atrás', playAgain: 'Jugar de nuevo', timeUp: '¡Tiempo agotado!', 
+            gameOver: 'Juego terminado!', finalScore: 'Tu puntuación:', 
+            correct: '¡Correcto!', wrong: '¡Incorrecto!', langNote: 'Haz clic para escuchar',
+            timeEnd: 'Se acabó el tiempo.', loseEnd: 'Has perdido todas las vidas.',
+            praise1: '¡Excelente!', praise2: '¡Buen trabajo!', praise3: '¡Inténtalo de nuevo!',
+            correctCount: 'Correctas:', streakCount: 'Racha:'
+        }
+    },
+    { 
+        code: 'it-IT', name: 'Italiano', flag: '🇮🇹',
+        texts: { 
+            chooseLang: 'Scegli lingua', title: 'Impara i numeri', selectLevel: 'Scegli livello:', 
+            score: 'Punti', listen: 'Ascolta', replay: 'Riascolta', start: 'Gioca', 
+            back: 'Indietro', playAgain: 'Gioca ancora', timeUp: 'Tempo scaduto!', 
+            gameOver: 'Gioco finito!', finalScore: 'Il tuo punteggio:', 
+            correct: 'Corretto!', wrong: 'Sbagliato!', langNote: 'Clicca per ascoltare',
+            timeEnd: 'Il tempo è scaduto.', loseEnd: 'Hai perso tutte le vite.',
+            praise1: 'Eccellente!', praise2: 'Ottimo lavoro!', praise3: 'Riprova!',
+            correctCount: 'Corrette:', streakCount: 'Serie:'
+        }
+    }
+];
+
+// --- CHUYỂN ĐỔI SỐ THÀNH CHỮ ---
+const NUMBER_WORDS = {
+    'de-DE': {
+        units: ['Null', 'Eins', 'Zwei', 'Drei', 'Vier', 'Fünf', 'Sechs', 'Sieben', 'Acht', 'Neun', 'Zehn', 'Elf', 'Zwölf', 'Dreizehn', 'Vierzehn', 'Fünfzehn', 'Sechzehn', 'Siebzehn', 'Achtzehn', 'Neunzehn'],
+        tens: ['', '', 'Zwanzig', 'Dreißig', 'Vierzig', 'Fünfzig', 'Sechzig', 'Siebzig', 'Achtzig', 'Neunzig'],
+        hundred: 'Hundert',
+        format: (t, u) => `${u}und${t}`
+    },
+    'en-US': {
+        units: ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'],
+        tens: ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'],
+        hundred: 'One hundred',
+        format: (t, u) => `${t}-${u}`
+    },
+    'fr-FR': {
+        units: ['Zéro', 'Un', 'Deux', 'Trois', 'Quatre', 'Cinq', 'Six', 'Sept', 'Huit', 'Neuf', 'Dix', 'Onze', 'Douze', 'Treize', 'Quatorze', 'Quinze', 'Seize', 'Dix-sept', 'Dix-huit', 'Dix-neuf'],
+        tens: ['', '', 'Vingt', 'Trente', 'Quarante', 'Cinquante', 'Soixante', 'Soixante-dix', 'Quatre-vingt', 'Quatre-vingt-dix'],
+        hundred: 'Cent',
+        format: (t, u, num) => {
+            if (u === 1 && t !== 'Quatre-vingt') return `${t}-et-un`;
+            if (t === 'Quatre-vingt' && u === 1) return 'Quatre-vingt-un';
+            return `${t}-${u}`;
+        }
+    },
+    'es-ES': {
+        units: ['Cero', 'Uno', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho', 'Nueve', 'Diez', 'Once', 'Doce', 'Trece', 'Catorce', 'Quince', 'Dieciséis', 'Diecisiete', 'Dieciocho', 'Diecinueve'],
+        tens: ['', '', 'Veinte', 'Treinta', 'Cuarenta', 'Cincuenta', 'Sesenta', 'Setenta', 'Ochenta', 'Noventa'],
+        hundred: 'Cien',
+        format: (t, u, num) => {
+             if (num < 30) return t.replace('e','') + u;
+             return `${t} y ${u}`;
+        }
+    },
+    'it-IT': {
+        units: ['Zero', 'Uno', 'Due', 'Tre', 'Quattro', 'Cinque', 'Sei', 'Sette', 'Otto', 'Nove', 'Dieci', 'Undici', 'Dodici', 'Tredici', 'Quattordici', 'Quindici', 'Sedici', 'Diciassette', 'Diciotto', 'Diciannove'],
+        tens: ['', '', 'Venti', 'Trenta', 'Quaranta', 'Cinquanta', 'Sessanta', 'Settanta', 'Ottanta', 'Novanta'],
+        hundred: 'Cento',
+        format: (t, u) => `${t}${u}`
+    },
+    'zh-CN': {
+        units: ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九'],
+        tens: ['', '', '二十', '三十', '四十', '五十', '六十', '七十', '八十', '九十'],
+        hundred: '一百',
+        format: (t, u, num) => (num % 10 === 0 ? t : t + u)
+    },
+    'ja-JP': {
+        units: ['ゼロ', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九'],
+        tens: ['', '', '二十', '三十', '四十', '五十', '六十', '七十', '八十', '九十'],
+        hundred: '百',
+        format: (t, u, num) => (num % 10 === 0 ? t : t + u)
+    },
+    'ko-KR': {
+        units: ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구', '십', '십일', '십이', '십삼', '십사', '십오', '십육', '십칠', '십팔', '십구'],
+        tens: ['', '', '이십', '삼십', '사십', '오십', '육십', '칠십', '팔십', '구십'],
+        hundred: '백',
+        format: (t, u, num) => (num % 10 === 0 ? t : t + u)
+    },
+    'ru-RU': {
+        units: ['Ноль', 'Один', 'Два', 'Три', 'Четыре', 'Пять', 'Шесть', 'Семь', 'Восемь', 'Девять', 'Десять', 'Одиннадцать', 'Двенадцать', 'Тринадцать', 'Четырнадцать', 'Пятнадцать', 'Шестнадцать', 'Семнадцать', 'Восемнадцать', 'Девятнадцать'],
+        tens: ['', '', 'Двадцать', 'Тридцать', 'Сорок', 'Пятьдесят', 'Шестьдесят', 'Семьдесят', 'Восемьдесят', 'Девяносто'],
+        hundred: 'Сто',
+        format: (t, u) => `${t} ${u}`
+    }
+};
+
+function getNumberText(lang, num) {
+    const dict = NUMBER_WORDS[lang] || NUMBER_WORDS['en-US'];
+    
+    if (num === 100) return dict.hundred;
+
+    if (num < 20) return dict.units[num];
+    
+    let ten = Math.floor(num / 10);
+    let unit = num % 10;
+    let textTens = dict.tens[ten];
+    let textUnit = dict.units[unit];
+    
+    if (unit === 0) return textTens;
+    
+    return dict.format(textTens, textUnit, num);
+}
+
+const game = {
+    totalLevels: 10,
+    totalTime: 180,
+    questionTimeLimit: 20,
+    maxLives: 3,
+    level:1, score: 0, lives: 3, timeLeft: 180, isPlaying: false,
+    correctCount: 0,
+    consecutiveCorrect: 0,
+    selectedLang: LANGUAGES[0],
+    currentNumber: 0, lastNumber: -1,
+    questionStartTime: 0,
+    timerInterval: null,
+    questionTimerInterval: null,
+
+    synth: window.speechSynthesis,
+    voices: [],
+    audioCtx: new (window.AudioContext || window.webkitAudioContext)(),
+    isAudioUnlocked: false,
+
+    init: function() {
+        this.loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => this.loadVoices();
+        }
+        this.renderLangScreen();
+    },
+
+    loadVoices: function() {
+        this.voices = this.synth.getVoices();
+    },
+
+    unlockAudio: function() {
+        if (!this.isAudioUnlocked) {
+            if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume();
+            const u = new SpeechSynthesisUtterance('');
+            this.synth.speak(u);
+            this.isAudioUnlocked = true;
+        }
+    },
+
+    updateUITexts: function(langObj) {
+        const t = langObj.texts;
+        const els = document.querySelectorAll('[data-translate]');
+        els.forEach(el => {
+            const key = el.dataset.translate;
+            if (t[key]) el.innerText = t[key];
+        });
+    },
+
+    renderLangScreen: function() {
+        const container = document.getElementById('lang-selector');
+        container.innerHTML = '';
+        LANGUAGES.forEach(lang => {
+            const btn = document.createElement('div');
+            btn.className = `lang-btn ${lang.code === this.selectedLang.code ? 'active' : ''}`;
+            btn.innerHTML = `<span class="flag">${lang.flag}</span><span>${lang.name}</span>`;
+            btn.onclick = () => {
+                this.unlockAudio();
+                this.selectedLang = lang;
+                this.updateUITexts(lang);
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.speakNumber(1);
+                setTimeout(() => this.showMenu(), 1000);
+            };
+            container.appendChild(btn);
+        });
+    },
+
+    showLangScreen: function() {
+        this.synth.cancel();
+        this.updateUITexts(this.selectedLang);
+        this.switchScreen('lang-screen');
+    },
+
+    showMenu: function() {
+        this.synth.cancel();
+        document.getElementById('current-lang-flag').innerText = this.selectedLang.flag;
+        const container = document.getElementById('level-selector');
+        container.innerHTML = '';
+        for(let i = 1; i <= this.totalLevels; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'level-btn' + (i === 1 ? ' selected' : '');
+            btn.innerText = `1-${i*10}`;
+            btn.onclick = () => {
+                this.playSound('click');
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                this.level = i;
+                document.getElementById('level-info').innerText = `Bereich: 1 to ${i*10}`;
+            };
+            container.appendChild(btn);
+        }
+        this.switchScreen('start-screen');
+    },
+
+    start: function() {
+        this.score = 0;
+        this.lives = this.maxLives;
+        this.timeLeft = this.totalTime;
+        this.isPlaying = true;
+        this.lastNumber = -1;
+        
+        this.correctCount = 0;
+        this.consecutiveCorrect = 0;
+
+        this.updateHUD();
+        this.switchScreen('game-screen');
+        this.unlockAudio();
+
+        clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+            this.timeLeft--;
+            this.updateHUD();
+            if(this.timeLeft <= 0) this.gameOver(true);
+        }, 1000);
+
+        this.nextQuestion();
+    },
+
+    generateQuestion: function() {
+        const maxNum = this.level * 10;
+        let num;
+        do {
+            num = Math.floor(Math.random() * maxNum) + 1;
+        } while (num === this.lastNumber);
+        this.lastNumber = num;
+        return num;
+    },
+
+    nextQuestion: function() {
+        if (!this.isPlaying) return;
+        this.currentNumber = this.generateQuestion();
+        this.questionStartTime = Date.now();
+        
+        document.getElementById('written-text').innerText = getNumberText(this.selectedLang.code, this.currentNumber);
+        
+        this.renderOptions();
+        setTimeout(() => this.speakNumber(this.currentNumber), 500);
+        this.startQuestionTimer();
+    },
+
+    renderOptions: function() {
+        const container = document.getElementById('options-area');
+        container.innerHTML = '';
+        const correctAnswer = this.currentNumber;
+        const answers = new Set([correctAnswer]);
+        const maxNum = this.level * 10;
+
+        while(answers.size < 6) {
+            let wrong = Math.floor(Math.random() * maxNum) + 1;
+            if (wrong !== correctAnswer) answers.add(wrong);
+        }
+
+        const answersArray = Array.from(answers).sort(() => Math.random() - 0.5);
+
+        answersArray.forEach(ans => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = ans;
+            btn.onclick = () => this.checkAnswer(ans, btn);
+            container.appendChild(btn);
+        });
+    },
+
+    speakNumber: function(num) {
+        this.speakText(num.toString());
+    },
+
+    speakText: function(text) {
+        this.synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = this.selectedLang.code;
+        utterance.rate = 0.9; 
+
+        let selectedVoice = null;
+        const exactVoices = this.voices.filter(v => v.lang === this.selectedLang.code);
+        if (exactVoices.length > 0) selectedVoice = exactVoices[0];
+        else {
+            const langPrefix = this.selectedLang.code.split('-')[0];
+            const fallbackVoices = this.voices.filter(v => v.lang.startsWith(langPrefix));
+            if (fallbackVoices.length > 0) selectedVoice = fallbackVoices[0];
+        }
+
+        if (selectedVoice) utterance.voice = selectedVoice;
+        this.synth.speak(utterance);
+    },
+
+    replayAudio: function() {
+        if (this.isPlaying) {
+            this.playSound('click');
+            this.speakNumber(this.currentNumber);
+        }
+    },
+
+    startQuestionTimer: function() {
+        clearInterval(this.questionTimerInterval);
+    },
+
+    checkAnswer: function(selectedVal, btnElement) {
+        if (!this.isPlaying) return;
+        this.synth.cancel();
+
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        const isCorrect = (selectedVal === this.currentNumber);
+        const qBox = document.getElementById('written-text');
+        const t = this.selectedLang.texts;
+
+        if (isCorrect) {
+            const timeTaken = (Date.now() - this.questionStartTime) / 1000;
+            let points = Math.max(0, 10 - Math.floor(timeTaken / 2));
+            this.score += points;
+            
+            this.correctCount++;
+            this.consecutiveCorrect++;
+            
+            btnElement.classList.add('correct');
+            this.playSound('correct');
+            qBox.innerText = `${t.correct} ${selectedVal}`;
+        } else {
+            this.lives--;
+            this.consecutiveCorrect = 0;
+            
+            btnElement.classList.add('wrong');
+            this.playSound('wrong');
+            qBox.innerText = `${t.wrong} ${this.currentNumber}`;
+        }
+
+        this.updateHUD();
+
+        if (this.lives <= 0) {
+            setTimeout(() => this.gameOver(false), 1500);
+        } else {
+            setTimeout(() => this.nextQuestion(), 1500);
+        }
+    },
+
+    playSound: function(type) {
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        const now = this.audioCtx.currentTime;
+        
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            osc.start(now);
+            osc.stop(now + 0.5);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } else if (type === 'click') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        }
+    },
+
+    updateHUD: function() {
+        document.getElementById('score-display').innerText = this.score;
+        const percent = (this.timeLeft / this.totalTime) * 100;
+        const bar = document.getElementById('time-bar');
+        bar.style.width = percent + '%';
+        if(percent < 20) bar.style.background = '#e74c3c'; 
+        else bar.style.background = 'var(--primary-color)';
+
+        const heartsContainer = document.getElementById('lives-display');
+        heartsContainer.innerHTML = '';
+        for(let i=0; i<this.lives; i++) {
+            heartsContainer.innerHTML += '<span class="heart">❤️</span>';
+        }
+    },
+
+    gameOver: function(isTimeOut) {
+        this.isPlaying = false;
+        clearInterval(this.timerInterval);
+        this.synth.cancel();
+
+        const t = this.selectedLang.texts;
+        const title = document.getElementById('result-title');
+        const message = document.getElementById('result-message');
+        const scoreDisplay = document.getElementById('result-score');
+        const statCorrect = document.getElementById('stat-correct');
+        const statStreak = document.getElementById('stat-streak');
+
+        scoreDisplay.innerText = this.score;
+        statCorrect.innerText = this.correctCount;
+        statStreak.innerText = this.consecutiveCorrect;
+
+        if (isTimeOut) {
+            title.innerText = t.timeUp;
+            message.innerText = t.timeEnd;
+        } else {
+            title.innerText = t.gameOver;
+            message.innerText = t.loseEnd;
+        }
+
+        if (this.score >= 80) message.innerText += " " + t.praise1;
+        else if (this.score >= 40) message.innerText += " " + t.praise2;
+        else message.innerText += " " + t.praise3;
+
+        this.switchScreen('end-screen');
+    },
+
+    switchScreen: function(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+};
+
+game.init();
+</script>
+</body>
+</html>
